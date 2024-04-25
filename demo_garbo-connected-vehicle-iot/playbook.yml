@@ -1,0 +1,33 @@
+## playbook.yml
+---
+- name: Deploy Connected Vehicle Platform
+  hosts: all
+  become: yes
+  vars:
+    webserver_package_name: httpd
+    database_package_name: mysql-server
+    apache_config_file_src: /path/to/your/apache/config/file.conf
+    apache_config_file_dest: /etc/httpd/conf.d/
+    apache_service_name: httpd
+    mysql_service_name: mysqld
+    app_db_name: app_db
+    app_db_user: app_user
+    app_db_password: app_password
+    firewall_services:
+      - http
+      - mysql
+
+  roles:
+    - webserver
+    - database
+
+  handlers:
+    - name: Restart Apache
+      ansible.builtin.service:
+        name: "{{ apache_service_name }}"
+        state: restarted
+
+    - name: Restart MySQL
+      ansible.builtin.service:
+        name: "{{ mysql_service_name }}"
+        state: restarted

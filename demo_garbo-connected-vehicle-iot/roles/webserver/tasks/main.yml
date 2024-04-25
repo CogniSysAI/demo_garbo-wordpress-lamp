@@ -1,0 +1,43 @@
+## roles/webserver/tasks/main.yml
+---
+# This task ensures that the Apache web server is installed on the target machine.
+- name: Install Apache web server
+  ansible.builtin.yum:
+    name: httpd
+    state: present
+  become: yes
+
+# This task starts the Apache service and ensures it runs at boot.
+- name: Ensure Apache is running and enabled on boot
+  ansible.builtin.service:
+    name: httpd
+    state: started
+    enabled: yes
+  become: yes
+
+# This task deploys the web application's configuration file to the Apache server.
+- name: Deploy Apache configuration file for the web application
+  ansible.builtin.copy:
+    src: /path/to/your/apache/config/file.conf
+    dest: /etc/httpd/conf.d/
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart Apache
+  become: yes
+
+# This task ensures the firewall allows HTTP traffic.
+- name: Open HTTP port in the firewall
+  ansible.builtin.firewalld:
+    service: http
+    permanent: yes
+    state: enabled
+  become: yes
+
+# This handler restarts Apache to apply configuration changes.
+handlers:
+  - name: Restart Apache
+    ansible.builtin.service:
+      name: httpd
+      state: restarted
+    become: yes

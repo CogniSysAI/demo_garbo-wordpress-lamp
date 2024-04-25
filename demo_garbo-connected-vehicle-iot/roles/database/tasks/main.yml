@@ -1,0 +1,56 @@
+## roles/database/tasks/main.yml
+---
+# This task ensures that the MySQL database server is installed on the target machine.
+- name: Install MySQL database server
+  ansible.builtin.yum:
+    name: mysql-server
+    state: present
+  become: yes
+
+# This task ensures the MySQL service is started and enabled on boot.
+- name: Ensure MySQL is running and enabled on boot
+  ansible.builtin.service:
+    name: mysqld
+    state: started
+    enabled: yes
+  become: yes
+
+# This task secures the MySQL installation.
+- name: Secure MySQL installation
+  ansible.builtin.shell: |
+    mysql_secure_installation <<EOF
+
+    y
+    root_password
+    root_password
+    y
+    y
+    y
+    y
+    EOF
+  become: yes
+  ignore_errors: yes
+
+# This task creates a database for the application.
+- name: Create application database
+  ansible.builtin.mysql_db:
+    name: app_db
+    state: present
+  become: yes
+
+# This task creates a user for the application database.
+- name: Create application database user
+  ansible.builtin.mysql_user:
+    name: app_user
+    password: app_password
+    priv: 'app_db.*:ALL'
+    state: present
+  become: yes
+
+# This task ensures the firewall allows MySQL traffic.
+- name: Open MySQL port in the firewall
+  ansible.builtin.firewalld:
+    service: mysql
+    permanent: yes
+    state: enabled
+  become: yes
