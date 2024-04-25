@@ -1,0 +1,30 @@
+## ansible/roles/lamp/templates/httpd.conf.j2
+<VirtualHost *:80>
+    ServerAdmin webmaster@localhost
+    DocumentRoot /var/www/html
+
+    <Directory /var/www/html>
+        Options Indexes FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+    # PHP Settings
+    php_value upload_max_filesize 40M
+    php_value post_max_size 42M
+
+    # Security Enhancements
+    ServerTokens Prod
+    ServerSignature Off
+
+    # Enable .htaccess Overrides
+    <Files ".ht*">
+        Require all denied
+    </Files>
+</VirtualHost>
+
+# Ensure that the configuration is modular and can be easily adjusted
+# by overriding these values through environment variables if necessary.

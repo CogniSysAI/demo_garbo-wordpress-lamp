@@ -1,0 +1,50 @@
+## ansible/roles/lamp/templates/php.ini.j2
+; PHP.ini configuration template for LAMP stack setup
+; This template configures PHP settings according to best practices and project requirements.
+
+[PHP]
+
+; Maximum allowed size for uploaded files.
+upload_max_filesize = {{ upload_max_filesize | default('40M') }}
+
+; Maximum size of POST data that PHP will accept.
+post_max_size = {{ post_max_size | default('42M') }}
+
+; Maximum execution time of each script, in seconds
+max_execution_time = {{ max_execution_time | default('30') }}
+
+; Maximum amount of time each script may spend parsing request data
+max_input_time = {{ max_input_time | default('60') }}
+
+; Maximum input variables for POST requests
+max_input_vars = {{ max_input_vars | default('1000') }}
+
+; Memory limit for PHP scripts
+memory_limit = {{ memory_limit | default('128M') }}
+
+; Error reporting level
+error_reporting = {{ error_reporting | default('E_ALL & ~E_DEPRECATED & ~E_STRICT') }}
+
+; Display errors in output
+display_errors = {{ display_errors | default('Off') }}
+
+; Log errors to a file
+log_errors = {{ log_errors | default('On') }}
+
+; Location of the error log file
+error_log = {{ error_log | default('/var/log/php_errors.log') }}
+
+; Timezone setting
+date.timezone = {{ date_timezone | default('UTC') }}
+
+; Session save path
+session.save_path = {{ session_save_path | default('/var/lib/php/sessions') }}
+
+; Automatically start session
+session.auto_start = {{ session_auto_start | default('0') }}
+
+; How to handle session cookies, use '0' to not set SameSite attribute
+session.cookie_samesite = {{ session_cookie_samesite | default('"Lax"') }}
+
+; This is a template and the actual values can be adjusted as needed.
+; Variables are set with defaults but can be overridden by Ansible playbook variables.

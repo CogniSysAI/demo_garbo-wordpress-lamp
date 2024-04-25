@@ -1,0 +1,84 @@
+---
+- name: Configure LAMP stack on AWS ECS instances with Docker optimization
+  hosts: all
+  become: yes
+  vars:
+    apache_docker_image: "my-apache:latest"
+    mysql_docker_image: "mysql:5.7"
+    php_docker_image: "php:7.4-apache"
+    mysql_root_password: "defaultPassword"
+    php_modules: ["php-mysql", "php-gd", "php-xml"]
+    docker_registry_username: "your_dockerhub_username"
+    docker_registry_password: "your_dockerhub_password"
+    docker_registry_email: "your_email@example.com"
+    dockerfile_paths:
+      apache: "./ansible/roles/lamp/files/Dockerfile/apache"
+      mysql: "./ansible/roles/lamp/files/Dockerfile/mysql"
+      php: "./ansible/roles/lamp/files/Dockerfile/php"
+
+  tasks:
+    - name: Log in to DockerHub
+      community.docker.docker_login:
+        username: "{{ docker_registry_username }}"
+        password: "{{ docker_registry_password }}"
+        email: "{{ docker_registry_email }}"
+      register: login_result
+      ignore_errors: yes
+
+    - name: Check Docker login success
+      fail:
+        msg: "Failed to log in to DockerHub"
+      when: login_result is failed
+
+    - name: Build and push Docker images
+      community.docker.docker_image:
+        source: build
+        build:
+          path: "{{ dockerfile_paths[item] }}"
+        name: "{{ lookup('vars', item + '_docker_image') }}"
+        push: yes
+      loop:
+        - apache
+        - mysql
+        - php
+      register: image_build
+      ignore_errors: yes
+
+    - name: Check image build success
+      fail:
+        msg: "Failed to build or push one or more Docker images"
+      when: image_build is failed
+
+    - name: Deploy Docker containers
+      community.docker.docker_container:
+        name: "{{ item.key }}"
+        image: "{{ item.value }}"
+        state: started
+        ports:
+          - "80:80"
+        env:
+          MYSQL_ROOT_PASSWORD: "{{ mysql_root_password }}"
+        restart_policy: always
+        volumes_from:
+          - apache
+      with_dict:
+        apache: "{{ apache_docker_image }}"
+        mysql: "{{ mysql_docker_image }}"
+        php: "{{ php_docker_image }}"
+      ignore_errors: yes
+
+  handlers:
+    - name: restart apache container
+      community.docker.docker_container:
+        name: apache
+        state: restarted
+
+    - name: restart mysql container
+      community.docker.docker_container:
+        name: mysql
+        state: restarted
+
+    - name: restart php container
+      community.docker.docker_container:
+        name: php
+        state: restarted

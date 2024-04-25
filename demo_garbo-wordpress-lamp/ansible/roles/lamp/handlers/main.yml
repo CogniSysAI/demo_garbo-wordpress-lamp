@@ -1,0 +1,24 @@
+---
+# Handler definitions for restarting services within the LAMP stack setup, now using variables for service names to ensure compatibility across different Linux distributions.
+
+- name: restart apache
+  ansible.builtin.service:
+    name: "{{ apache_service_name }}" # Variable used to adapt to different distributions
+    state: restarted
+  listen: "restart apache"
+
+- name: restart mysql
+  ansible.builtin.service:
+    name: "{{ mysql_service_name }}" # Variable used to adapt to different distributions
+    state: restarted
+  listen: "restart mysql"
+
+# Enhanced handler for PHP to accommodate scenarios where PHP runs as a separate service, like when using PHP-FPM.
+- name: restart php
+  ansible.builtin.service:
+    name: "{{ php_service_name | default(apache_service_name) }}"
+    state: restarted
+  listen: "restart php"
+
+# Note: Ensure that `apache_service_name`, `mysql_service_name`, and `php_service_name` (if PHP runs as a separate service) variables are defined in your playbook's vars section or within the roles' defaults/main.yml.
+# This approach allows for flexibility and compatibility across different environments and Linux distributions.

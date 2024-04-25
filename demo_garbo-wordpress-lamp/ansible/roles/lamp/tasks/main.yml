@@ -1,0 +1,111 @@
+---
+# Set OS-specific variables for package names and services
+- name: Set OS-specific variables
+  set_fact:
+    package_update: "{{ 'apt' if ansible_os_family == 'Debian' else 'yum' }}"
+    apache_package: "{{ 'apache2' if ansible_os_family == 'Debian' else 'httpd' }}"
+    mysql_package: "{{ 'mysql-server' if ansible_os_family == 'Debian' else 'mariadb-server' }}"
+    php_packages: "{{ ['php', 'php-mysql', 'php-gd', 'php-xml'] }}"
+    apache_service: "{{ 'apache2' if ansible_os_family == 'Debian' else 'httpd' }}"
+    mysql_service: "{{ 'mysql' if ansible_os_family == 'Debian' else 'mariadb' }}"
+    apache_config_path: "{{ '/etc/apache2/sites-available/000-default.conf' if ansible_os_family == 'Debian' else '/etc/httpd/conf.d/vhost.conf' }}"
+    php_config_path: "{{ '/etc/php/7.4/apache2/php.ini' if ansible_os_family == 'Debian' else '/etc/php.ini' }}"
+
+# Update package cache
+- name: Update package cache
+  ansible.builtin.package:
+    name: "{{ package_update }}"
+    update_cache: yes
+    cache_valid_time: 3600
+
+# Install Apache
+- name: Install Apache
+  ansible.builtin.package:
+    name: "{{ apache_package }}"
+    state: present
+
+# Install MySQL
+- name: Install MySQL
+  ansible.builtin.package:
+    name: "{{ mysql_package }}"
+    state: present
+
+# Install PHP and modules
+- name: Install PHP and modules
+  ansible.builtin.package:
+    name: "{{ php_packages }}"
+    state: present
+
+# Start and enable Apache service
+- name: Start and enable Apache service
+  ansible.builtin.service:
+    name: "{{ apache_service }}"
+    state: started
+    enabled: yes
+
+# Start and enable MySQL service
+- name: Start and enable MySQL service
+  ansible.builtin.service:
+    name: "{{ mysql_service }}"
+    state: started
+    enabled: yes
+
+# Ensure MySQL root password is set and secure installation
+- name: Ensure MySQL root password is set
+  ansible.builtin.mysql_user:
+    login_user: root
+    login_password: "{{ mysql_root_password | default('defaultPassword') }}"
+    name: root
+    password: "{{ mysql_root_password }}"
+    host_all: yes
+
+- name: Remove anonymous users
+  ansible.builtin.mysql_user:
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+    name: ''
+    host_all: yes
+    state: absent
+
+- name: Disallow root login remotely
+  ansible.builtin.mysql_user:
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+    name: root
+    host: '%'
+    state: absent
+
+- name: Remove test database
+  ansible.builtin.mysql_db:
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+    name: test
+    state: absent
+
+# Copy Apache and PHP configuration templates
+- name: Copy Apache configuration template
+  ansible.builtin.template:
+    src: httpd.conf.j2
+    dest: "{{ apache_config_path }}"
+  notify: restart apache
+
+- name: Copy PHP configuration template
+  ansible.builtin.template:
+    src: php.ini.j2
+    dest: "{{ php_config_path }}"
+  notify: restart apache
+
+# Ensure Apache mod_rewrite is enabled
+- name: Ensure Apache mod_rewrite is enabled
+  ansible.builtin.command:
+    cmd: "{{ 'a2enmod rewrite' if ansible_os_family == 'Debian' else 'ln -s /etc/httpd/mods-available/rewrite.load /etc/httpd/mods-enabled/' }}"
+    removes: "{{ '/etc/apache2/mods-enabled/rewrite.load' if ansible_os_family == 'Debian' else '/etc/httpd/mods-enabled/rewrite.load' }}"
+  notify: restart apache
+  when: ansible_os_family == "Debian" or ansible_os_family == "RedHat"
+
+# Handlers for restarting services
+handlers:
+  - name: restart apache
+    ansible.builtin.service:
+      name: "{{ apache_service }}"
+      state: restarted
