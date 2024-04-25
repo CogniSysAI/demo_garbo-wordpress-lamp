@@ -1,6 +1,6 @@
 # Garbo: Agentic AI for Infrastructure as Code (IaC) Generation
 
-Welcome to the Garbo repository! Garbo is an agentic AI system designed to generate Infrastructure as Code (IaC) for complex cloud setups. This repository contains the generated IaC outputs for various cloud environments. All the contents of the subfolders in thei repo were entirely AI generated using our agents.
+Welcome to the Garbo repository! Garbo is an agentic AI system designed to generate Infrastructure as Code (IaC) for complex cloud setups. This repository contains the generated IaC outputs for various cloud environments. All the contents of the subfolders in this repo were entirely AI generated using our agents.
 
 ## Table of Contents
 
