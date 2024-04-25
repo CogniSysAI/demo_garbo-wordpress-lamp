@@ -7,6 +7,7 @@ Welcome to the Garbo repository! Garbo is an agentic AI system designed to gener
 - [Introduction](#introduction)
 - [Features](#features)
 - [Supported Cloud Providers](#supported-cloud-providers)
+- [Security](#security)
 - [Cost Optimization](#cost-optimization)
 - [License](#license)
 
@@ -33,6 +34,9 @@ Garbo currently supports the following cloud providers:
 - Oracle Cloud Infrastructure (OCI)
 - IBM Cloud
 - Alibaba Cloud
+
+## Security
+Garbo prioritizes security and incorporates a range of cybersecurity measures and best practices into the generated IaC configurations. It enables monitoring and alerting, configures Web Application Firewall (WAF) rules, integrates Intrusion Detection System (IDS) capabilities, performs Infrastructure as Code (IaC) and Docker container scanning, and automatically updates containers based on new Common Vulnerabilities and Exposures (CVEs). Additionally, Garbo generates configurations that adhere to industry-standard compliance frameworks such as SOC 2, NIST, HIPAA, and others, helping you meet regulatory requirements and maintain a secure and compliant cloud environment.
 
 ## Cost Optimization
 
