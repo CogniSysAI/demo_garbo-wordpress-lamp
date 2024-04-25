@@ -16,20 +16,19 @@
   become: yes
 
 # This task secures the MySQL installation.
+# This task secures the MySQL installation.
 - name: Secure MySQL installation
-  ansible.builtin.shell: |
-    mysql_secure_installation <<EOF
-
-    y
-    root_password
-    root_password
-    y
-    y
-    y
-    y
-    EOF
+  ansible.builtin.expect:
+    command: mysql_secure_installation
+    responses:
+      'Enter password for user root:': "{{ mysql_root_password }}"
+      'New password:': "{{ mysql_root_password }}"
+      'Re-enter new password:': "{{ mysql_root_password }}"
+      'Remove anonymous users? (Press y|Y for Yes, any other key for No):': 'y'
+      'Disallow root login remotely? (Press y|Y for Yes, any other key for No):': 'y'
+      'Remove test database and access to it? (Press y|Y for Yes, any other key for No):': 'y'
+      'Reload privilege tables now? (Press y|Y for Yes, any other key for No):': 'y'
   become: yes
-  ignore_errors: yes
 
 # This task creates a database for the application.
 - name: Create application database
